@@ -1,1 +1,53 @@
+    - name: Start Juice Shop
+      run: |
+        docker-compose up -d
+
+name: Security Checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # SYFT - SBOM generation
+    - name: Run Syft (SBOM)
+      uses: anchore/sbom-action@v0.15.3
+      with:
+        output-file: sbom.syft.json
+        format: json
+      continue-on-error: true
+
+    # SEMGREP - Static analysis
+    - name: Run Semgrep
+      uses: returntocorp/semgrep-action@v1
+      with:
+        config: "p/default"
+      continue-on-error: true
+
+    # GITLEAKS - Secrets detection
+    - name: Run Gitleaks
+      uses: gitleaks/gitleaks-action@v2
+      with:
+        config-path: .gitleaks.toml
+      continue-on-error: true
+
+    # OWASP ZAP - Dynamic analysis
+    - name: Run OWASP ZAP baseline scan
+      uses: zaproxy/action-baseline@v0.7.0
+      with:
+        target: 'http://localhost:3000' # Gerekirse değiştir
+        fail_action: false
+      continue-on-error: true
 
