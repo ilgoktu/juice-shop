@@ -1,14 +1,10 @@
-    - name: Start Juice Shop
-      run: |
-        docker-compose up -d
-
 name: Security Checks
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
-    branches: [main]
+    branches: [master]
 
 jobs:
   security:
@@ -47,7 +43,7 @@ jobs:
     - name: Run OWASP ZAP baseline scan
       uses: zaproxy/action-baseline@v0.7.0
       with:
-        target: 'http://localhost:3000' # Gerekirse değiştir
+        target: 'http://localhost:3000' # Uygulamanın çalıştığı port
         fail_action: false
       continue-on-error: true
 
